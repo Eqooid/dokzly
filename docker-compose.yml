@@ -1,0 +1,52 @@
+services:
+
+  # Development API Service
+  api-dev:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: dokzly-api-dev
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - OPENAI_API_KEY=
+      - PORT=3000
+    volumes:
+      - ./api:/app
+      - /app/node_modules
+    networks:
+      - dokzly-network
+    
+
+  # Development Web Service
+  web-dev:
+    build:
+      context: ./web  
+      dockerfile: Dockerfile
+      target: dev
+    container_name: dokzly-web-dev
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - NEXT_TELEMETRY_DISABLED=1
+      - NEXT_PUBLIC_API_URL=http://api-dev:3000/api/v1/
+      - API_URL=http://api-dev:3000/
+      - PORT=3001
+    volumes:
+      - ./web:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - api-dev
+    networks:
+      - dokzly-network
+   
+networks:
+  dokzly-network:
+    driver: bridge
+
+# Volumes for persistent data (if needed in the future)
+volumes:
+  dokzly-data:
